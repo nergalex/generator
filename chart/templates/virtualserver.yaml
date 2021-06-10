@@ -1,0 +1,26 @@
+{{- if .Values.virtualServer.enabled -}}
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: {{ include "chart.fullname" . }}-vs
+spec:
+  host: {{ .Values.virtualServer.host }}
+  {{- if .Values.virtualServer.tls }}
+  tls:
+    secret: {{ .Values.virtualServer.tls.secretName }}
+    redirect:
+      {{ toYaml .Values.virtualServer.tls.redirect }}
+  {{- end }}
+  upstreams:
+    {{- range .Values.virtualServer.upstreams }}
+    - name: {{ .name }}
+      service: {{ .service }}
+      port: {{ .port }}
+    {{- end }}
+  routes:
+    {{- range .Values.virtualServer.routes }}
+    - path: {{ .path }}
+      action:
+        {{ toYaml .action }}
+    {{- end }}
+{{- end }}

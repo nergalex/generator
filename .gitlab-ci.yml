@@ -1,0 +1,101 @@
+stages:
+  - build
+  - deploy
+  - destroy
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE
+  HELM_RELEASE: sentence-$CI_PROJECT_NAME
+
+Build Image:
+  stage: build
+  image: docker:20
+  services:
+    - docker:20-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker image pull ${IMAGE}:latest || true 
+    - >
+      docker build 
+      --pull 
+      --cache-from ${IMAGE}:latest 
+      --tag ${IMAGE}:latest
+      .
+    - docker push ${IMAGE}:latest
+
+# Build latest:
+#   variables:
+#     GIT_STRATEGY: none
+#   stage: build
+#   only:
+#     refs:
+#       - master
+#     variables:
+#       - $BUILD_NGINX_IMAGE == "true"
+#   before_script:
+#     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+#   script:
+#     - docker pull $IMAGE:$NGINX_VERSION
+#     - docker tag $IMAGE:$NGINX_VERSION $IMAGE:latest
+#     - docker push $IMAGE:latest
+
+# Deploy review NGINX Plus Ingress:
+#   stage: deploy
+#   environment:
+#     name: aks/development
+#   image: dtzar/helm-kubectl:3.5.0
+#   except:
+#     - master
+#   before_script:
+#     - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
+#   script:
+#     - kubectl get namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
+#     - kubectl create secret -n "$KUBE_NAMESPACE" docker-registry "gitlab-registry-${CI_PROJECT_PATH_SLUG}" --docker-server="$CI_REGISTRY" --docker-username="${CI_DEPLOY_USER:-$CI_REGISTRY_USER}" --docker-password="${CI_DEPLOY_PASSWORD:-$CI_REGISTRY_PASSWORD}" --docker-email="$GITLAB_USER_EMAIL" --dry-run=client -o yaml | kubectl replace -n "$KUBE_NAMESPACE" --force -f -
+#     - helm repo add nginx-stable https://helm.nginx.com/stable
+#     - helm repo update
+#     - helm upgrade --install my-ingress-dev nginx-stable/nginx-ingress -n $KUBE_NAMESPACE --set controller.image.repository=${IMAGE} --set controller.image.tag=${NGINX_VERSION} --set controller.nginxplus=true --set controller.serviceAccount.imagePullSecretName=gitlab-registry-${CI_PROJECT_PATH_SLUG} --set controller.ingressClass=nginx-dev 
+
+
+Deploy Production :
+  stage: deploy
+  environment: 
+    name: aks/production
+    kubernetes:
+      namespace: production
+  image: dtzar/helm-kubectl:3.5.0
+  before_script:
+    - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
+  script:
+    - kubectl get namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
+    - kubectl create secret -n "$KUBE_NAMESPACE" docker-registry "gitlab-registry-${CI_PROJECT_PATH_SLUG}" --docker-server="$CI_REGISTRY" --docker-username="${CI_DEPLOY_USER:-$CI_REGISTRY_USER}" --docker-password="${CI_DEPLOY_PASSWORD:-$CI_REGISTRY_PASSWORD}" --docker-email="$GITLAB_USER_EMAIL" --dry-run=client -o yaml | kubectl replace -n "$KUBE_NAMESPACE" --force -f -
+    - helm upgrade --install $HELM_RELEASE ./chart -n $KUBE_NAMESPACE --set image.repository=${IMAGE} --set image.tag=latest  --set imagePullSecret=gitlab-registry-${CI_PROJECT_PATH_SLUG}
+
+
+# Destroy Review NGINX Plus Ingress:
+#   stage: destroy
+#   image: 
+#     name: dtzar/helm-kubectl:3.5.0
+#   before_script:
+#     - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
+#   script:
+#     - helm uninstall my-ingress-dev -n $KUBE_NAMESPACE
+#   when: manual
+#   except:
+#     - master  
+#   environment:
+#     name: aks/development
+#     action: stop
+
+Destroy Production NGINX Plus Ingress:
+  stage: destroy
+  image: 
+    name: dtzar/helm-kubectl:3.5.0
+  before_script:
+    - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
+  script:
+    - helm uninstall $HELM_RELEASE -n $KUBE_NAMESPACE
+  when: manual 
+  environment:
+    name: aks/production
+    action: stop
