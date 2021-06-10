@@ -48,9 +48,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
-          {{- range .Values.image.env }}
-          - name: {{ .name }}
-            value: {{ .value }}
+          {{- range $k, $v := .Values.image.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
           {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

@@ -16,9 +16,9 @@ image:
   readinessProbe:
     path: /
     port: 8080
-  env:
-  - name: NAMESPACE
-    value: api
+  env: 
+  # name: value
+  
 
 imagePullSecret: ""
 nameOverride: ""
