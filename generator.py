@@ -11,6 +11,7 @@ from random import randint
 
 
 class Server(BaseHTTPRequestHandler):
+
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -21,11 +22,11 @@ class Server(BaseHTTPRequestHandler):
         
     # GET sends back a Hello world message
     def do_GET(self):
-	parsed_path = urlparse.urlparse(self.path)
-	print parsed_path
+        parsed_path = urlparse.urlparse(self.path)
+        print(parsed_path)
         self._set_headers()
-	generated_name = name_generator()
-	self.wfile.write(json.dumps(generated_name))
+        generated_name = name_generator()
+        self.wfile.write(json.dumps(generated_name))
 
     # POST echoes the message adding a JSON field
     def do_POST(self):
@@ -49,22 +50,23 @@ class Server(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(message))
 
 def name_generator():
-	NAMESPACE = os.environ.get('NAMESPACE')
-        gateway = '.svc.cluster.local'
-	generated_name = {}
-	attributes_list = ['adjectives', 'animals', 'colors', 'locations']
-	for attribute in attributes_list:
-		api_size = get_index(NAMESPACE, attribute)
-		index = randint(1, api_size)
-		name = get_data(NAMESPACE, attribute, index)
-		generated_name[attribute] = name
-	return generated_name
+    PREFIX = os.environ.get('PREFIX')
+    NAMESPACE = os.environ.get('NAMESPACE')
+    gateway = '.svc.cluster.local'
+    generated_name = {}
+    attributes_list = ['adjectives', 'animals', 'colors', 'locations']
+    for attribute in attributes_list:
+        api_size = get_index(PREFIX, NAMESPACE, attribute)
+        index = randint(1, api_size)
+        name = get_data(PREFIX, NAMESPACE, attribute, index)
+        generated_name[attribute] = name
+    return generated_name
 
-def get_index(ns, attribute):
+def get_index(prefix ,ns, attribute):
     method = 'GET'
     content_type = 'application/json'
     #content_length = len(body)
-    uri = 'http://' + attribute + '.' + ns + '/' + attribute
+    uri = 'http://' + prefix + '-' + attribute + '.' + ns + '/' + attribute
 
     headers = {
         'content-type': content_type,
@@ -72,46 +74,46 @@ def get_index(ns, attribute):
 
     response = requests.get(uri, headers=headers)
     if (response.status_code >= 200 and response.status_code <= 299):
-        print 'Accepted'
+        print('Accepted')
 
-        print 'Response: ' + str(response)
-	json_data = response.json()
-	print json_data
-	list_size = len(json_data)	
+        print('Response: ' + str(response))
+        json_data = response.json()
+        print(json_data)
+        list_size = len(json_data)	
         print('Size: %i',list_size)
 
     else:
-        print "Response code: {}".format(response.status_code)
+        print("Response code: {}".format(response.status_code))
     return list_size
 
-def get_data(ns, attribute, index):
+def get_data(prefix, ns, attribute, index):
     method = 'GET'
     content_type = 'application/json'
     resource = '/'+ attribute
     #content_length = len(body)
-    uri = 'http://' + attribute + '.' + ns + '/' + attribute + '/' + str(index)
+    uri = 'http://' + prefix + '-' + attribute + '.' + ns + '/' + attribute + '/' + str(index)
 
     headers = {
         'content-type': content_type,
     }
-    print "index" + str(index)
+    print("index" + str(index))
     response = requests.get(uri, headers=headers)
     if (response.status_code >= 200 and response.status_code <= 299):
-        print 'Accepted'
-        print 'Response: ' + str(response)
-	json_data = response.json()
-	print str(json_data)
-	name = json_data['name']
-	print 'Name: ' + name
+        print('Accepted')
+        print('Response: ' + str(response))
+        json_data = response.json()
+        print(str(json_data))
+        name = json_data['name']
+        print('Name: ' + name)
     else:
-        print "Response code: {}".format(response.status_code)
+        print("Response code: {}".format(response.status_code))
     return name        
 
 def run(server_class=HTTPServer, handler_class=Server, port=8080):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     
-    print 'Starting httpd on port %d...' % port
+    print('Starting httpd on port %d...' % port)
     httpd.serve_forever()
     
 if __name__ == "__main__":

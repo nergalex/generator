@@ -71,7 +71,7 @@ Deploy Production :
   script:
     - kubectl get namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
     - kubectl create secret -n "$KUBE_NAMESPACE" docker-registry "gitlab-registry-${CI_PROJECT_PATH_SLUG}" --docker-server="$CI_REGISTRY" --docker-username="${CI_DEPLOY_USER:-$CI_REGISTRY_USER}" --docker-password="${CI_DEPLOY_PASSWORD:-$CI_REGISTRY_PASSWORD}" --docker-email="$GITLAB_USER_EMAIL" --dry-run=client -o yaml | kubectl replace -n "$KUBE_NAMESPACE" --force -f -
-    - helm upgrade --install $HELM_RELEASE ./chart -n $KUBE_NAMESPACE --set image.repository=${IMAGE} --set image.tag=latest  --set imagePullSecret=gitlab-registry-${CI_PROJECT_PATH_SLUG} --set image.env.NAMESPACE=${KUBE_NAMESPACE}
+    - helm upgrade --install $HELM_RELEASE ./chart -n $KUBE_NAMESPACE --set image.repository=${IMAGE} --set image.tag=latest  --set imagePullSecret=gitlab-registry-${CI_PROJECT_PATH_SLUG} --set image.env.NAMESPACE=${KUBE_NAMESPACE} --set image.env.PREFIX=sentence
 
 
 # Destroy Review NGINX Plus Ingress:
