@@ -4,6 +4,8 @@ stages:
   - destroy
 
 variables:
+  PROD_NAMESPACE: production-api
+  DEV_NAMESPACE: development-api
   IMAGE: $CI_REGISTRY_IMAGE
   HELM_RELEASE: sentence-$CI_PROJECT_NAME
 
@@ -62,7 +64,7 @@ Deploy Production :
   environment: 
     name: aks/production
     kubernetes:
-      namespace: production-api
+      namespace: $PROD_NAMESPACE
   image: dtzar/helm-kubectl:3.5.0
   before_script:
     - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
@@ -98,4 +100,6 @@ Destroy Production NGINX Plus Ingress:
   when: manual 
   environment:
     name: aks/production
+    kubernetes:
+      namespace: $PROD_NAMESPACE
     action: stop
