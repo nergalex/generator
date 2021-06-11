@@ -55,18 +55,19 @@ class Server(BaseHTTPRequestHandler):
 def name_generator():
     PREFIX = os.environ.get('PREFIX')
     NAMESPACE = os.environ.get('NAMESPACE')
-    gateway = '.svc.cluster.local'
     generated_name = {}
     attributes_list = ['adjectives', 'animals', 'colors', 'locations']
     for attribute in attributes_list:
         api_size = get_index(PREFIX, NAMESPACE, attribute)
-        index = randint(1, api_size)
-        name = get_data(PREFIX, NAMESPACE, attribute, index)
-        generated_name[attribute] = name
+        if api_size == 0 : #error api_size
+            generated_name[attribute] = "null"
+        else:
+            index = randint(1, api_size)
+            name = get_data(PREFIX, NAMESPACE, attribute, index)
+            generated_name[attribute] = name
     return generated_name
 
 def get_index(prefix ,ns, attribute):
-    method = 'GET'
     content_type = 'application/json'
 
     uri = 'http://' + prefix + '-' + attribute + '.' + ns + '/' + attribute
@@ -79,15 +80,16 @@ def get_index(prefix ,ns, attribute):
         response = requests.get(uri, headers=headers)
     except requests.exceptions.RequestException as e:
         print(e)
+        return 0
     
     if (response.status_code >= 200 and response.status_code <= 299):
-        print('Accepted')
+        print(uri + 'Accepted')
 
         print('Response: ' + str(response))
         json_data = response.json()
-        print(json_data)
+        print(json.dumps(json_data))
         list_size = len(json_data)	
-        print('Size: %i',list_size)
+        print('Size: ' + list_size)
 
     else:
         print("Response code: {}".format(response.status_code))
@@ -103,7 +105,7 @@ def get_data(prefix, ns, attribute, index):
     headers = {
         'content-type': content_type,
     }
-    print("index" + str(index))
+    print("index " + str(index))
     response = requests.get(uri, headers=headers)
     if (response.status_code >= 200 and response.status_code <= 299):
         print('Accepted')
