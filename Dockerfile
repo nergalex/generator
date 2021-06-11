@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3-slim
 
 # to be able to use "nano" with shell on "docker exec -it [CONTAINER ID] bash"
 ENV TERM xterm
