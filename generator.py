@@ -25,8 +25,11 @@ class Server(BaseHTTPRequestHandler):
         parsed_path = urlparse.urlparse(self.path)
         print(parsed_path)
         self._set_headers()
-        generated_name = name_generator()
-        self.wfile.write(json.dumps(generated_name))
+        if self.path == "/health":
+            self.wfile.write("health OK")            
+        else:
+            generated_name = name_generator()
+            self.wfile.write(json.dumps(generated_name))
 
     # POST echoes the message adding a JSON field
     def do_POST(self):

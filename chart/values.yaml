@@ -11,10 +11,10 @@ image:
   tag: ""
   containerPort: 8080
   livenessProbe:
-    path: /
+    path: /health
     port: 8080
   readinessProbe:
-    path: /
+    path: /health
     port: 8080
   env: 
   # name: value
