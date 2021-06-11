@@ -7,6 +7,8 @@ COPY generator.py /
 
 EXPOSE 8080
 
+RUN pip install requests
+
 WORKDIR /
 CMD ["python", "generator.py"]
 HEALTHCHECK --interval=5s --timeout=3s --retries=3 CMD curl -f http://localhost:8080 || exit 1

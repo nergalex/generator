@@ -1,9 +1,9 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
-import urllib.parse
+from urllib.parse import urlparse
 import cgi
-import urllib.request
-import os
+import requests
+
 
 from random import seed
 from random import randint
@@ -21,14 +21,14 @@ class Server(BaseHTTPRequestHandler):
         
     # GET sends back a Hello world message
     def do_GET(self):
-        parsed_path = urllib.parse(self.path)
+        parsed_path = urlparse(self.path)
         print(parsed_path)
         self._set_headers()
         if self.path == "/health":
-            self.wfile.write(bytes("health OK"))            
+            self.wfile.write(bytes("health OK"), 'utf-8')            
         else:
             generated_name = name_generator()
-            self.wfile.write(bytes(json.dumps(generated_name)))
+            self.wfile.write(bytes(json.dumps(generated_name), 'utf-8'))
 
     # POST echoes the message adding a JSON field
     def do_POST(self):
@@ -52,8 +52,16 @@ class Server(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(message))
 
 def name_generator():
-    PREFIX = os.environ.get('PREFIX')
-    NAMESPACE = os.environ.get('NAMESPACE')
+    # try:
+    #     PREFIX = os.environ.get('PREFIX')
+    # except:
+    #     PREFIX = ""
+    # try:
+    #     NAMESPACE = os.environ.get('NAMESPACE')
+    # except:
+    #     NAMESPACE = ""
+    PREFIX=""
+    NAMESPACE=""
     generated_name = {}
     attributes_list = ['adjectives', 'animals', 'colors', 'locations']
     for attribute in attributes_list:
@@ -76,8 +84,8 @@ def get_index(prefix ,ns, attribute):
     }
 
     try:
-        response = urllib.request.get(uri, headers=headers)
-    except urllib.request.exceptions.RequestException as e:
+        response = requests.get(uri, headers=headers)
+    except requests.exceptions.RequestException as e:
         print(e)
         return 0
     
@@ -105,7 +113,7 @@ def get_data(prefix, ns, attribute, index):
         'content-type': content_type,
     }
     print("index " + str(index))
-    response = urllib.request.get(uri, headers=headers)
+    response = requests.get(uri, headers=headers)
     if (response.status_code >= 200 and response.status_code <= 299):
         print('Accepted')
         print('Response: ' + str(response))
