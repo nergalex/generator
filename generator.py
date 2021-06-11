@@ -68,14 +68,18 @@ def name_generator():
 def get_index(prefix ,ns, attribute):
     method = 'GET'
     content_type = 'application/json'
-    #content_length = len(body)
+
     uri = 'http://' + prefix + '-' + attribute + '.' + ns + '/' + attribute
 
     headers = {
         'content-type': content_type,
     }
 
-    response = requests.get(uri, headers=headers)
+    try:
+        response = requests.get(uri, headers=headers)
+    except requests.exceptions.RequestException as e:
+        print(e)
+    
     if (response.status_code >= 200 and response.status_code <= 299):
         print('Accepted')
 
