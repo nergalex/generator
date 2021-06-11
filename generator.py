@@ -95,7 +95,7 @@ def get_index(prefix ,ns, attribute):
         json_data = response.json()
         print(json.dumps(json_data))
         list_size = len(json_data)	
-        print('Size: ' + list_size)
+        print('Size: ' + str(list_size))
 
     else:
         print("Response code: {}".format(response.status_code))
