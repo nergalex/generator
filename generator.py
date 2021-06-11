@@ -25,7 +25,7 @@ class Server(BaseHTTPRequestHandler):
         print(parsed_path)
         self._set_headers()
         if self.path == "/health":
-            self.wfile.write(bytes("health OK"), encoding='utf8')            
+            self.wfile.write(bytes("health OK", encoding='utf8'))            
         else:
             generated_name = name_generator()
             self.wfile.write(bytes(json.dumps(generated_name), encoding='utf8'))
@@ -52,16 +52,14 @@ class Server(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(message))
 
 def name_generator():
-    # try:
-    #     PREFIX = os.environ.get('PREFIX')
-    # except:
-    #     PREFIX = ""
-    # try:
-    #     NAMESPACE = os.environ.get('NAMESPACE')
-    # except:
-    #     NAMESPACE = ""
-    PREFIX=""
-    NAMESPACE=""
+    try:
+        PREFIX = os.environ.get('PREFIX')
+    except:
+        PREFIX = ""
+    try:
+        NAMESPACE = os.environ.get('NAMESPACE')
+    except:
+        NAMESPACE = ""
     generated_name = {}
     attributes_list = ['adjectives', 'animals', 'colors', 'locations']
     for attribute in attributes_list:
