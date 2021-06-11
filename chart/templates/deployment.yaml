@@ -38,10 +38,10 @@ spec:
             - name: http
               containerPort: {{ .Values.image.containerPort}}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: {{ .Values.image.livenessProbe.path }}
-              port: {{ .Values.image.livenessProbe.port }}
+          # livenessProbe:
+          #   httpGet:
+          #     path: {{ .Values.image.livenessProbe.path }}
+          #     port: {{ .Values.image.livenessProbe.port }}
           readinessProbe:
             httpGet:
               path: {{ .Values.image.readinessProbe.path }}
