@@ -53,7 +53,7 @@ Deploy review:
     kubernetes:
       namespace: $DEV_NAMESPACE
   only:
-    ref:
+    refs:
       - development
   image: dtzar/helm-kubectl:3.5.0
   before_script:
@@ -77,7 +77,7 @@ Deploy Production :
     kubernetes:
       namespace: $PROD_NAMESPACE
   only:
-    ref:
+    refs:
       - main
   image: dtzar/helm-kubectl:3.5.0
   before_script:
@@ -98,7 +98,7 @@ Destroy Review NGINX Plus Ingress:
     - helm uninstall $HELM_RELEASE -n $KUBE_NAMESPACE
   when: manual
   only:
-    ref:
+    refs:
       - development 
   environment:
     name: aks/development
@@ -116,7 +116,7 @@ Destroy Production NGINX Plus Ingress:
     - helm uninstall $HELM_RELEASE -n $KUBE_NAMESPACE
   when: manual
   only:
-    ref:
+    refs:
       - main
   environment:
     name: aks/production
