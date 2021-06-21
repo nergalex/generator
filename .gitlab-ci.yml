@@ -72,7 +72,7 @@ Deploy review:
 
 Deploy Production :
   stage: deploy
-  environment: 
+  environment:
     name: aks/production
     kubernetes:
       namespace: $PROD_NAMESPACE
