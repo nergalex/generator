@@ -1,24 +1,21 @@
 stages:
   - build
-  - deploy
-  - destroy
+  - push
 
 variables:
-  PROD_NAMESPACE: production-api
-  DEV_NAMESPACE: development-api
   IMAGE: $CI_REGISTRY_IMAGE
-  HELM_RELEASE: sentence-$CI_PROJECT_NAME
 
-Build Image:
+before_script:
+  - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+
+Build image:
   stage: build
   image: docker:20
-  services:
-    - docker:20-dind
   only:
     refs:
       - development
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  services:
+    - docker:20-dind
   script:
     - docker image pull ${IMAGE}:latest || true 
     - >
@@ -29,97 +26,31 @@ Build Image:
       .
     - docker push ${IMAGE}:dev
 
-Build latest:
+push Tag:
   image: docker:20
   services:
     - docker:20-dind
   variables:
     GIT_STRATEGY: none
-  stage: build
+  stage: push
+  only:
+    - tags
+  script:
+    - docker pull $IMAGE:dev
+    - docker tag $IMAGE:dev $IMAGE:$CI_COMMIT_REF_NAME
+    - docker push $IMAGE:$CI_COMMIT_REF_NAME
+
+Push latest:
+  image: docker:20
+  services:
+    - docker:20-dind
+  variables:
+    GIT_STRATEGY: none
+  stage: push
   only:
     refs:
       - main
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - docker pull $IMAGE:dev
     - docker tag $IMAGE:dev $IMAGE:latest
     - docker push $IMAGE:latest
-
-Deploy review:
-  stage: deploy
-  environment: 
-    name: aks/development
-    kubernetes:
-      namespace: $DEV_NAMESPACE
-  only:
-    refs:
-      - development
-  image: dtzar/helm-kubectl:3.5.0
-  before_script:
-    - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
-  script:
-    - kubectl get namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
-    - kubectl create secret -n "$KUBE_NAMESPACE" docker-registry "gitlab-registry-${CI_PROJECT_PATH_SLUG}" --docker-server="$CI_REGISTRY" --docker-username="${CI_DEPLOY_USER:-$CI_REGISTRY_USER}" --docker-password="${CI_DEPLOY_PASSWORD:-$CI_REGISTRY_PASSWORD}" --docker-email="$GITLAB_USER_EMAIL" --dry-run=client -o yaml | kubectl replace -n "$KUBE_NAMESPACE" --force -f -
-    - >
-      helm upgrade --install $HELM_RELEASE ./chart -n $KUBE_NAMESPACE 
-      --set image.repository=${IMAGE} 
-      --set image.tag=dev  
-      --set imagePullSecret=gitlab-registry-${CI_PROJECT_PATH_SLUG} 
-      --set image.env.NAMESPACE=${KUBE_NAMESPACE} 
-      --set image.env.PREFIX=sentence
-
-
-Deploy Production :
-  stage: deploy
-  environment:
-    name: aks/production
-    kubernetes:
-      namespace: $PROD_NAMESPACE
-  only:
-    refs:
-      - main
-  image: dtzar/helm-kubectl:3.5.0
-  before_script:
-    - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
-  script:
-    - kubectl get namespace "$KUBE_NAMESPACE" || kubectl create namespace "$KUBE_NAMESPACE"
-    - kubectl create secret -n "$KUBE_NAMESPACE" docker-registry "gitlab-registry-${CI_PROJECT_PATH_SLUG}" --docker-server="$CI_REGISTRY" --docker-username="${CI_DEPLOY_USER:-$CI_REGISTRY_USER}" --docker-password="${CI_DEPLOY_PASSWORD:-$CI_REGISTRY_PASSWORD}" --docker-email="$GITLAB_USER_EMAIL" --dry-run=client -o yaml | kubectl replace -n "$KUBE_NAMESPACE" --force -f -
-    - helm upgrade --install $HELM_RELEASE ./chart -n $KUBE_NAMESPACE --set image.repository=${IMAGE} --set image.tag=latest  --set imagePullSecret=gitlab-registry-${CI_PROJECT_PATH_SLUG} --set image.env.NAMESPACE=${KUBE_NAMESPACE} --set image.env.PREFIX=sentence
-
-
-Destroy Review NGINX Plus Ingress:
-  stage: destroy
-  image: 
-    name: dtzar/helm-kubectl:3.5.0
-  before_script:
-    - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
-  script:
-    - helm uninstall $HELM_RELEASE -n $KUBE_NAMESPACE
-  when: manual
-  only:
-    refs:
-      - development 
-  environment:
-    name: aks/development
-    kubernetes:
-      namespace: $DEV_NAMESPACE
-    action: stop
-
-Destroy Production NGINX Plus Ingress:
-  stage: destroy
-  image: 
-    name: dtzar/helm-kubectl:3.5.0
-  before_script:
-    - chmod go-r ${KUBECONFIG}  #Fix permissions to non-group/world
-  script:
-    - helm uninstall $HELM_RELEASE -n $KUBE_NAMESPACE
-  when: manual
-  only:
-    refs:
-      - main
-  environment:
-    name: aks/production
-    kubernetes:
-      namespace: $PROD_NAMESPACE
-    action: stop
