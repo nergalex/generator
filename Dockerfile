@@ -5,7 +5,7 @@ ENV TERM xterm
 
 COPY generator.py /
 
-EXPOSE 8080
+EXPOSE 80
 
 RUN pip install requests
 
