@@ -33,7 +33,8 @@ class Server(BaseHTTPRequestHandler):
 
     # POST echoes the message adding a JSON field
     def do_POST(self):
-        ctype, pdict = cgi.parse_header(self.getheader('content-type'))
+        print(self.headers)
+        ctype, pdict = cgi.parse_header(self.headers['content-type'])
         
         # refuse to receive non-json content
         if ctype != 'application/json':
@@ -42,7 +43,7 @@ class Server(BaseHTTPRequestHandler):
             return
             
         # read the message and convert it into a python dictionary
-        length = int(self.getheader('content-length'))
+        length = int(self.headers['content-length'])
         message = json.loads(self.rfile.read(length))
         
         # add a property to the object, just to mess with data
