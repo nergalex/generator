@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 import cgi
 import requests
 import os
+import logging
+import time
 
 
 from random import seed
@@ -12,24 +14,43 @@ from random import randint
 
 class Server(BaseHTTPRequestHandler):
 
-    def _set_headers(self):
+    # Set JSON headers
+    def _set_json_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        
+    
+    def _set_text_headers(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+
+    # Handle Head  
     def do_HEAD(self):
-        self._set_headers()
+        logging.info("HEAD request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
+        self._set_json_headers()
         
-    # GET sends back a Hello world message
+    # Handle GET
     def do_GET(self):
-        parsed_path = urlparse(self.path)
-        print(parsed_path)
-        self._set_headers()
+        logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
+        
+        # get Health
         if self.path == "/health":
-            self.wfile.write(bytes("health OK", encoding='utf8'))            
-        else:
+            self._set_text_headers()
+            self.wfile.write(bytes("health OK", encoding='utf8'))
+
+        # get Sentence 
+        elif self.path == "/sentence":
+            self._set_json_headers()
             generated_name = name_generator()
-            self.wfile.write(bytes(json.dumps(generated_name), encoding='utf8'))
+            self.wfile.write(bytes(json.dumps(generated_name), encoding='utf8'))           
+        
+        # else 404
+        else:
+            self.send_response(404)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(bytes("404 not found", encoding='utf8'))
 
     # POST echoes the message adding a JSON field
     def do_POST(self):
@@ -41,17 +62,26 @@ class Server(BaseHTTPRequestHandler):
             self.send_response(400)
             self.end_headers()
             return
-            
+
+        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\nBody:\n%s\n", str(self.path), str(self.headers), post_data.decode('utf-8'))
+
         # read the message and convert it into a python dictionary
-        length = int(self.headers['content-length'])
-        message = json.loads(self.rfile.read(length))
-        
+        message = json.loads(post_data)
+
         # add a property to the object, just to mess with data
-        message['received'] = 'ok'
+        #message['received'] = 'ok'
+
+        targetService = message['service']
+        
+        print(message['service'])
+        print(message['value'])
         
         # send the message back
-        self._set_headers()
-        self.wfile.write(json.dumps(message))
+        self._set_json_headers()
+        self.wfile.write(json.dumps(message).encode(encoding='utf_8'))
+        #self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
 def name_generator():
     try:
@@ -125,12 +155,18 @@ def get_data(prefix, ns, attribute, index):
         print("Response code: {}".format(response.status_code))
     return name        
 
-def run(server_class=HTTPServer, handler_class=Server, port=80):
-    server_address = ('', port)
+def run(server_class=HTTPServer, handler_class=Server, port=80, hostname='localhost'):
+    server_address = (hostname, port)
     httpd = server_class(server_address, handler_class)
-    
-    print('Starting httpd on port %d...' % port)
-    httpd.serve_forever()
+    logging.basicConfig(level=logging.INFO)
+
+    print(time.asctime(), 'Server UP - %s:%s' % (hostname, port))
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    httpd.server_close()
+    print(time.asctime(), 'Server DOWN - %s:%s' % (hostname, port))
     
 if __name__ == "__main__":
     from sys import argv
