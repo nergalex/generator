@@ -156,7 +156,7 @@ def get_data(prefix, ns, attribute, index):
     return name        
 
 def run(server_class=HTTPServer, handler_class=Server, port=80, hostname='localhost'):
-    server_address = (hostname, port)
+    server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     logging.basicConfig(level=logging.INFO)
 
