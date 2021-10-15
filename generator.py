@@ -40,7 +40,7 @@ class Server(BaseHTTPRequestHandler):
             self.wfile.write(bytes("health OK", encoding='utf8'))
 
         # get Sentence 
-        elif self.path == "/sentence":
+        elif self.path == "/api/sentence":
             self._set_json_headers()
             generated_name = name_generator()
             self.wfile.write(bytes(json.dumps(generated_name), encoding='utf8'))           
@@ -74,7 +74,7 @@ class Server(BaseHTTPRequestHandler):
         #message['received'] = 'ok'
 
         targetService = message['service']
-        
+
         print(message['service'])
         print(message['value'])
         
