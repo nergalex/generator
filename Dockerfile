@@ -5,7 +5,7 @@ ENV TERM xterm
 ENV PYTHONUNBUFFERED=1
 
 COPY generator.py /
-COPY routes /
+COPY /routes /routes
 
 EXPOSE 80
 
