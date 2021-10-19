@@ -142,11 +142,9 @@ def get_words(attribute):
         print(uri + ' Accepted')
 
         print('Response: ' + str(response))
-        words = json.dumps(response.json())
-        print(words)
     else:
         print("Response code: {}".format(response.status_code))
-    return words
+    return response.json
 
 def get_word(attribute, index):
     method = 'GET'
