@@ -118,7 +118,8 @@ def get_sentence():
             generated_name[attribute] = "null"
         else:
             index = randint(1, words_size)
-            name = get_word(attribute, index)
+            #name = get_word(attribute, index)
+            name = words[index]
             generated_name[attribute] = name
     return generated_name
 
