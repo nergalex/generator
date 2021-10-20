@@ -60,7 +60,6 @@ class Server(BaseHTTPRequestHandler):
                     response_content = json.dumps(get_sentence())
                 case _:
                     print("not found")
-                    print(get_word())
         else:
             status = 404
             content_type = "text/plain"
@@ -74,18 +73,17 @@ class Server(BaseHTTPRequestHandler):
 
     # POST echoes the message adding a JSON field
     def do_POST(self):
-        print(self.headers)
-        ctype, pdict = cgi.parse_header(self.headers['content-type'])
-        
+
+        ctype, _ = cgi.parse_header(self.headers['content-type'])
+        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        logging.info("POST request,\nPath: %s\nHeaders:\n%s\nBody:\n%s\n", str(self.path), str(self.headers), post_data.decode('utf-8'))
+
         # refuse to receive non-json content
         if ctype != 'application/json':
             self.send_response(400)
             self.end_headers()
             return
-
-        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-        post_data = self.rfile.read(content_length) # <--- Gets the data itself
-        logging.info("POST request,\nPath: %s\nHeaders:\n%s\nBody:\n%s\n", str(self.path), str(self.headers), post_data.decode('utf-8'))
 
         # read the message and convert it into a python dictionary
         message = json.loads(post_data)
