@@ -26,19 +26,10 @@ except:
 
 class Server(BaseHTTPRequestHandler):
 
-    # Set JSON headers
-    def _set_json_headers(self):
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-    
-    def _set_text_headers(self):
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-
     # Handle Head  
     def do_HEAD(self):
         logging.info("HEAD request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
-        self._set_json_headers()
+        return
         
     # Handle GET
     def do_GET(self):
@@ -67,6 +58,7 @@ class Server(BaseHTTPRequestHandler):
         self.send_header('Content-Type', content_type)
         self.end_headers()
         self.respond(bytes(response_content, "UTF-8"))
+        return
            
 
     # POST echoes the message adding a JSON field
@@ -99,14 +91,16 @@ class Server(BaseHTTPRequestHandler):
         response_content = json.dumps(message)
         
         # send the message back
-        self._set_json_headers()
         self.send_response(status)
         self.send_header('Content-Type', content_type)
         self.end_headers()
         self.respond(bytes(response_content, "UTF-8"))
+        return
     
     def respond(self, content):
         self.wfile.write(content)
+        print("Responded")
+        return
 
 
 def get_sentence():
