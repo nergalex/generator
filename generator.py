@@ -142,8 +142,7 @@ def get_words(attribute):
     else:
         print("Response code: {}".format(response.status_code))
 
-    data = response.json()
-    return data[attribute]
+    return response.json()
 
 # def get_word(attribute, index):
 #     method = 'GET'
