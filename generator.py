@@ -86,18 +86,24 @@ class Server(BaseHTTPRequestHandler):
         # read the message and convert it into a python dictionary
         message = json.loads(post_data)
 
-        # add a property to the object, just to mess with data
-        #message['received'] = 'ok'
-
+        # add a property to the object, just to mess with data   
+        message['received'] = 'ok'
+        
         targetService = message['service']
 
         print(message['service'])
         print(message['value'])
+
+        status = 200
+        content_type = 'application/json'
+        response_content = json.dumps(message)
         
         # send the message back
         self._set_json_headers()
-        self.wfile.write(json.dumps(message).encode(encoding='utf_8'))
-        #self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
+        self.send_response(status)
+        self.send_header('Content-Type', content_type)
+        self.end_headers()
+        self.respond(bytes(response_content, "UTF-8"))
     
     def respond(self, content):
         self.wfile.write(content)
@@ -111,13 +117,12 @@ def get_sentence():
         print(words)
         words_size = len(words)
         print(str(words_size))
-        #api_size = get_words(PREFIX, NAMESPACE, attribute)
         if words_size == 0 : #error api_size
             generated_name[attribute] = "null"
         else:
             index = randint(0, words_size-1)
+            print(index)
             name = words[index]['name']
-            #name = get_word(attribute, index)
             generated_name[attribute] = name
     return generated_name
 
@@ -146,34 +151,34 @@ def get_words(attribute):
 
     return response.json()
 
-# def get_word(attribute, index):
-#     method = 'GET'
-#     content_type = 'application/json'
-#     resource = '/'+ attribute
-#     #content_length = len(body)
-#     uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '/' + str(index)
+def get_word(attribute, index):
+    method = 'GET'
+    content_type = 'application/json'
+    resource = '/'+ attribute
+    #content_length = len(body)
+    uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '/' + str(index)
 
-#     headers = {
-#         'content-type': content_type,
-#     }
-#     print("index " + str(index))
+    headers = {
+        'content-type': content_type,
+    }
+    print("index " + str(index))
 
-#     try:
-#         response = requests.get(uri, headers=headers)
-#     except requests.exceptions.RequestException as e:
-#         print(e)
-#         return 0
+    try:
+        response = requests.get(uri, headers=headers)
+    except requests.exceptions.RequestException as e:
+        print(e)
+        return 0
 
-#     if (response.status_code >= 200 and response.status_code <= 299):
-#         print('Accepted')
-#         print('Response: ' + str(response))
-#         json_data = response.json()
-#         print(str(json_data))
-#         name = json_data['name']
-#         print('Name: ' + name)
-#     else:
-#         print("Response code: {}".format(response.status_code))
-#     return name
+    if (response.status_code >= 200 and response.status_code <= 299):
+        print('Accepted')
+        print('Response: ' + str(response))
+        json_data = response.json()
+        print(str(json_data))
+        name = json_data['name']
+        print('Name: ' + name)
+    else:
+        print("Response code: {}".format(response.status_code))
+    return name
 
 def post_word():
 
