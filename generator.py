@@ -52,10 +52,8 @@ class Server(BaseHTTPRequestHandler):
             print(routes[self.path])
             match routes[self.path]:
                 case "health":
-                    print("health")
                     response_content = "health OK\n"
                 case "sentence":
-                    print("sentence")
                     content_type = 'application/json'
                     response_content = json.dumps(get_sentence())
                 case _:
@@ -147,34 +145,34 @@ def get_words(attribute):
     data = response.json()
     return data[attribute]
 
-def get_word(attribute, index):
-    method = 'GET'
-    content_type = 'application/json'
-    resource = '/'+ attribute
-    #content_length = len(body)
-    uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '/' + str(index)
+# def get_word(attribute, index):
+#     method = 'GET'
+#     content_type = 'application/json'
+#     resource = '/'+ attribute
+#     #content_length = len(body)
+#     uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '/' + str(index)
 
-    headers = {
-        'content-type': content_type,
-    }
-    print("index " + str(index))
+#     headers = {
+#         'content-type': content_type,
+#     }
+#     print("index " + str(index))
 
-    try:
-        response = requests.get(uri, headers=headers)
-    except requests.exceptions.RequestException as e:
-        print(e)
-        return 0
+#     try:
+#         response = requests.get(uri, headers=headers)
+#     except requests.exceptions.RequestException as e:
+#         print(e)
+#         return 0
 
-    if (response.status_code >= 200 and response.status_code <= 299):
-        print('Accepted')
-        print('Response: ' + str(response))
-        json_data = response.json()
-        print(str(json_data))
-        name = json_data['name']
-        print('Name: ' + name)
-    else:
-        print("Response code: {}".format(response.status_code))
-    return name
+#     if (response.status_code >= 200 and response.status_code <= 299):
+#         print('Accepted')
+#         print('Response: ' + str(response))
+#         json_data = response.json()
+#         print(str(json_data))
+#         name = json_data['name']
+#         print('Name: ' + name)
+#     else:
+#         print("Response code: {}".format(response.status_code))
+#     return name
 
 def post_word():
 
