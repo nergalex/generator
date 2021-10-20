@@ -116,7 +116,8 @@ def get_sentence():
             generated_name[attribute] = "null"
         else:
             index = randint(1, words_size)
-            name = get_word(attribute, index)
+            name = words[index]['name']
+            #name = get_word(attribute, index)
             generated_name[attribute] = name
     return generated_name
 
@@ -142,7 +143,9 @@ def get_words(attribute):
         print('Response: ' + str(response))
     else:
         print("Response code: {}".format(response.status_code))
-    return response.json()
+
+    data = response.json()
+    return data[attribute]
 
 def get_word(attribute, index):
     method = 'GET'
