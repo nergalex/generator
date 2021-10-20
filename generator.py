@@ -108,7 +108,9 @@ def get_sentence():
     attributes_list = ['adjectives', 'animals', 'colors', 'locations']
     for attribute in attributes_list:
         words = get_words(attribute)
-        words_size = len(words[attribute])
+        print(type(words))
+        print(words)
+        words_size = len(words)
         #api_size = get_words(PREFIX, NAMESPACE, attribute)
         if words_size == 0 : #error api_size
             generated_name[attribute] = "null"
