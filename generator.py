@@ -84,7 +84,13 @@ class Server(BaseHTTPRequestHandler):
             match routes[self.path]:
                 case "adjectives":
                     print("adjectives")
-                    post_word("adjectives", message["value"])
+                    if post_word("adjectives", message["value"]):
+                        message['accepted'] = "true"
+                        response_content = message
+                    else:
+                        status = 400
+                        message['accepted'] = "false"
+                        response_content = message
                 case "animals":
                     print("hej")
                 case "colors":
@@ -100,10 +106,6 @@ class Server(BaseHTTPRequestHandler):
             status = 404
             content_type = "text/plain"
             response_content = "404 not found"                
-
-
-        # add a property to the object, just to mess with data   
-        message['received'] = 'ok'
                 
         # send the message back
         self.send_response(status)
@@ -204,16 +206,18 @@ def post_word(attribute, value):
         response = requests.post(uri, data=json.dumps(data), headers=headers)
     except requests.exceptions.RequestException as e:
         print(e)
-        return [] 
+        return False 
     
     if (response.status_code >= 200 and response.status_code <= 299):
         print(uri + ' Accepted')
 
         print('Response: ' + str(response))
+
+        return True
     else:
         print("Response code: {}".format(response.status_code))
-
-    return response.json()
+        return False
+    
 
 def run(server_class=HTTPServer, handler_class=Server, port=80, hostname=''):
     server_address = ('', port)
