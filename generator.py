@@ -75,7 +75,7 @@ class Server(BaseHTTPRequestHandler):
         # read the message and convert it into a python dictionary
         message = json.loads(post_data)
 
-        if self.path in routes:
+        if self.path in routes and "value" in message:
              # refuse to receive non-json content
             if ctype != 'application/json':
                 self.send_response(400)
@@ -86,11 +86,11 @@ class Server(BaseHTTPRequestHandler):
                     print("adjectives")
                     if post_word("adjectives", message["value"]):
                         message['accepted'] = "true"
-                        response_content = message
+                        response_content = json.dumps(message)
                     else:
                         status = 400
                         message['accepted'] = "false"
-                        response_content = message
+                        response_content = json.dumps(message)
                 case "animals":
                     print("hej")
                 case "colors":
