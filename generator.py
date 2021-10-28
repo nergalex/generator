@@ -69,27 +69,42 @@ class Server(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
         logging.info("POST request,\nPath: %s\nHeaders:\n%s\nBody:\n%s\n", str(self.path), str(self.headers), post_data.decode('utf-8'))
 
-        # refuse to receive non-json content
-        if ctype != 'application/json':
-            self.send_response(400)
-            self.end_headers()
-            return
-
+        status = 200
+        content_type = 'application/json'
+        response_content = ""
         # read the message and convert it into a python dictionary
         message = json.loads(post_data)
 
+        if self.path in routes:
+             # refuse to receive non-json content
+            if ctype != 'application/json':
+                self.send_response(400)
+                self.end_headers()
+                return
+            match routes[self.path]:
+                case "adjectives":
+                    print("adjectives")
+                    post_word("adjectives", message["value"])
+                case "animals":
+                    print("hej")
+                case "colors":
+                    print("hej")
+                case "locations":
+                    print("hej")
+                case _:
+                    print("method not allowed")
+                    status = 405
+                    content_type = "text/plain"
+                    response_content = "405 " + self.command + " not allowed" 
+        else:
+            status = 404
+            content_type = "text/plain"
+            response_content = "404 not found"                
+
+
         # add a property to the object, just to mess with data   
         message['received'] = 'ok'
-        
-        targetService = message['service']
-
-        print(message['service'])
-        print(message['value'])
-
-        status = 200
-        content_type = 'application/json'
-        response_content = json.dumps(message)
-        
+                
         # send the message back
         self.send_response(status)
         self.send_header('Content-Type', content_type)
@@ -119,7 +134,6 @@ def get_sentence():
             name = words[index]['name']
             generated_name[attribute] = name
     return generated_name
-
 
 def get_words(attribute):
     content_type = 'application/json'
@@ -174,10 +188,32 @@ def get_word(attribute, index):
         print("Response code: {}".format(response.status_code))
     return name
 
-def post_word():
+def post_word(attribute, value):
 
+    uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute
 
-    return
+    headers = {
+        'content-type': 'application/json'
+    }
+
+    data = {
+        'name': value
+    }
+
+    try:
+        response = requests.post(uri, data=json.dumps(data), headers=headers)
+    except requests.exceptions.RequestException as e:
+        print(e)
+        return [] 
+    
+    if (response.status_code >= 200 and response.status_code <= 299):
+        print(uri + ' Accepted')
+
+        print('Response: ' + str(response))
+    else:
+        print("Response code: {}".format(response.status_code))
+
+    return response.json()
 
 def run(server_class=HTTPServer, handler_class=Server, port=80, hostname=''):
     server_address = ('', port)
