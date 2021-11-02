@@ -83,7 +83,6 @@ class Server(BaseHTTPRequestHandler):
                 return
             match routes[self.path]:
                 case "adjectives":
-                    print("adjectives")
                     if post_word("adjectives", message["value"]):
                         message['accepted'] = "true"
                         response_content = json.dumps(message)
@@ -92,11 +91,29 @@ class Server(BaseHTTPRequestHandler):
                         message['accepted'] = "false"
                         response_content = json.dumps(message)
                 case "animals":
-                    print("hej")
+                    if post_word("animals", message["value"]):
+                        message['accepted'] = "true"
+                        response_content = json.dumps(message)
+                    else:
+                        status = 400
+                        message['accepted'] = "false"
+                        response_content = json.dumps(message)
                 case "colors":
-                    print("hej")
+                    if post_word("colors", message["value"]):
+                        message['accepted'] = "true"
+                        response_content = json.dumps(message)
+                    else:
+                        status = 400
+                        message['accepted'] = "false"
+                        response_content = json.dumps(message)
                 case "locations":
-                    print("hej")
+                    if post_word("locations", message["value"]):
+                        message['accepted'] = "true"
+                        response_content = json.dumps(message)
+                    else:
+                        status = 400
+                        message['accepted'] = "false"
+                        response_content = json.dumps(message)
                 case _:
                     print("method not allowed")
                     status = 405
@@ -161,12 +178,16 @@ def get_words(attribute):
 
     return response.json()
 
-def get_word(attribute, index):
-    method = 'GET'
+def get_word(attribute, index = None, query = None):
+    
     content_type = 'application/json'
-    resource = '/'+ attribute
-    #content_length = len(body)
-    uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '/' + str(index)
+    
+    if(index is not None and query is not None):
+        raise ValueError("should have index or query, but not both")
+    elif (index is not None):
+        uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '/' + str(index)
+    elif (query is not None):
+        uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute + '?q=' + query
 
     headers = {
         'content-type': content_type,
@@ -177,20 +198,25 @@ def get_word(attribute, index):
         response = requests.get(uri, headers=headers)
     except requests.exceptions.RequestException as e:
         print(e)
-        return 0
+        return []
 
     if (response.status_code >= 200 and response.status_code <= 299):
-        print('Accepted')
+        print(uri + ' Accepted')
         print('Response: ' + str(response))
         json_data = response.json()
         print(str(json_data))
-        name = json_data['name']
-        print('Name: ' + name)
     else:
         print("Response code: {}".format(response.status_code))
-    return name
+    return response.json()
 
 def post_word(attribute, value):
+
+    # Find if duplicate exists
+    word = get_word(attribute, query=value)
+
+    if (len(word) != 0): #word exists
+        print(value + " Exists in " + word)
+        return False
 
     uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute
 
