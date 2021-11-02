@@ -258,8 +258,8 @@ def post_word(attribute, value):
     try:
         response = requests.post(uri, data=json.dumps(data), headers=headers)
     except requests.exceptions.RequestException as e:
-        print(e)
-        return (False, e) 
+        print(e.response)
+        return (False, str(e)) 
     
     if (response.status_code >= 200 and response.status_code <= 299):
         print(uri + ' Accepted')
