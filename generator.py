@@ -1,5 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from routes.main import routes
+from routes.main import get_routes, post_routes
 from urllib.parse import urlparse
 import cgi
 import requests
@@ -38,6 +38,8 @@ class Server(BaseHTTPRequestHandler):
         status = 200
         content_type = "text/plain"
         response_content = ""
+
+        routes = get_routes
         
         if self.path in routes:
             print(routes[self.path])
@@ -75,50 +77,75 @@ class Server(BaseHTTPRequestHandler):
         # read the message and convert it into a python dictionary
         message = json.loads(post_data)
 
+        routes = post_routes
+
         if self.path in routes and "value" in message:
              # refuse to receive non-json content
             if ctype != 'application/json':
                 self.send_response(400)
                 self.end_headers()
                 return
-            match routes[self.path]:
-                case "adjectives":
-                    if post_word("adjectives", message["value"]):
-                        message['accepted'] = "true"
-                        response_content = json.dumps(message)
-                    else:
-                        status = 400
-                        message['accepted'] = "false"
-                        response_content = json.dumps(message)
-                case "animals":
-                    if post_word("animals", message["value"]):
-                        message['accepted'] = "true"
-                        response_content = json.dumps(message)
-                    else:
-                        status = 400
-                        message['accepted'] = "false"
-                        response_content = json.dumps(message)
-                case "colors":
-                    if post_word("colors", message["value"]):
-                        message['accepted'] = "true"
-                        response_content = json.dumps(message)
-                    else:
-                        status = 400
-                        message['accepted'] = "false"
-                        response_content = json.dumps(message)
-                case "locations":
-                    if post_word("locations", message["value"]):
-                        message['accepted'] = "true"
-                        response_content = json.dumps(message)
-                    else:
-                        status = 400
-                        message['accepted'] = "false"
-                        response_content = json.dumps(message)
-                case _:
-                    print("method not allowed")
-                    status = 405
-                    content_type = "text/plain"
-                    response_content = "405 " + self.command + " not allowed" 
+            
+            successful, info = post_word(routes[self.path], message["value"])
+            if successful:
+                message['accepted'] = "true"
+                message['info'] = info
+                response_content = json.dumps(message)
+            else:
+                status = 400
+                message['accepted'] = "false"
+                message['info'] = info
+                response_content = json.dumps(message)
+            # match routes[self.path]:
+            #     case "adjectives":
+            #         successful, info = post_word("adjectives", message["value"])
+            #         if successful:
+            #             message['accepted'] = "true"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #         else:
+            #             status = 400
+            #             message['accepted'] = "false"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #     case "animals":
+            #         successful, info = post_word("animals", message["value"])
+            #         if successful:
+            #             message['accepted'] = "true"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #         else:
+            #             status = 400
+            #             message['accepted'] = "false"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #     case "colors":
+            #         successful, info = post_word("animals", message["value"])
+            #         if successful:
+            #             message['accepted'] = "true"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #         else:
+            #             status = 400
+            #             message['accepted'] = "false"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #     case "locations":
+            #         successful, info = post_word("adjectives", message["value"])
+            #         if successful:
+            #             message['accepted'] = "true"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #         else:
+            #             status = 400
+            #             message['accepted'] = "false"
+            #             message['info'] = info
+            #             response_content = json.dumps(message)
+            #     case _:
+            #         print("method not allowed")
+            #         status = 405
+            #         content_type = "text/plain"
+            #         response_content = "405 " + self.command + " not allowed" 
         else:
             status = 404
             content_type = "text/plain"
@@ -216,7 +243,7 @@ def post_word(attribute, value):
 
     if (len(word) != 0): #word exists
         print(value + " Exists in " + word)
-        return False
+        return (False, "Error: " + value + " already exists")
 
     uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute
 
@@ -232,17 +259,17 @@ def post_word(attribute, value):
         response = requests.post(uri, data=json.dumps(data), headers=headers)
     except requests.exceptions.RequestException as e:
         print(e)
-        return False 
+        return (False, e) 
     
     if (response.status_code >= 200 and response.status_code <= 299):
         print(uri + ' Accepted')
 
         print('Response: ' + str(response))
 
-        return True
+        return (True, "")
     else:
         print("Response code: {}".format(response.status_code))
-        return False
+        return (False, "Response code: {}".format(response.status_code))
     
 
 def run(server_class=HTTPServer, handler_class=Server, port=80, hostname=''):
