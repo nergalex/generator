@@ -242,7 +242,7 @@ def post_word(attribute, value):
     word = get_word(attribute, query=value)
 
     if (len(word) != 0): #word exists
-        print(value + " Exists in " + word)
+        print(value + " Exists in " + str(word))
         return (False, "Error: " + value + " already exists")
 
     uri = 'http://' + PREFIX + '-' + attribute + '.' + NAMESPACE + '/' + attribute
