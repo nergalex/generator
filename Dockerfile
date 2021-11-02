@@ -2,8 +2,10 @@ FROM python:3-slim
 
 # to be able to use "nano" with shell on "docker exec -it [CONTAINER ID] bash"
 ENV TERM xterm
+ENV PYTHONUNBUFFERED=1
 
 COPY generator.py /
+COPY /routes /routes
 
 EXPOSE 80
 
