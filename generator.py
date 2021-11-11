@@ -1,6 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from routes.main import get_routes, post_routes
-from urllib.parse import urlparse
 import cgi
 import requests
 import os
@@ -8,7 +7,6 @@ import logging
 import time
 import json
 
-from random import seed
 from random import randint
 
 try:

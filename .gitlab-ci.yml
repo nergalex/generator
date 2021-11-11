@@ -1,12 +1,14 @@
+include:
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
 stages:
+  - test
   - build
   - push
 
 variables:
   IMAGE: $CI_REGISTRY_IMAGE
-
-before_script:
-  - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
 
 Build image:
   stage: build
@@ -16,6 +18,8 @@ Build image:
       - development
   services:
     - docker:20-dind
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - docker image pull ${IMAGE}:latest || true 
     - >
@@ -35,6 +39,8 @@ push Tag:
   stage: push
   only:
     - tags
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - docker pull $IMAGE:dev
     - docker tag $IMAGE:dev $IMAGE:$CI_COMMIT_REF_NAME
@@ -50,6 +56,8 @@ Push latest:
   only:
     refs:
       - main
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - docker pull $IMAGE:dev
     - docker tag $IMAGE:dev $IMAGE:latest
