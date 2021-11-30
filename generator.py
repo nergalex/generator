@@ -270,7 +270,7 @@ def post_word(attribute, value):
         return (False, "Response code: {}".format(response.status_code))
     
 
-def run(server_class=HTTPServer, handler_class=Server, port=80, hostname=''):
+def run(server_class=HTTPServer, handler_class=Server, port=8080, hostname=''):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     logging.basicConfig(level=logging.INFO)
