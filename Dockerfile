@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 COPY generator.py /
 COPY /routes /routes
 
-EXPOSE 80
+EXPOSE 8080
 
 RUN pip install requests
 
