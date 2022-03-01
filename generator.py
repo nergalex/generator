@@ -198,10 +198,12 @@ def get_words(attribute):
         print(uri + ' Accepted')
 
         print('Response: ' + str(response))
+        return response.json()
     else:
+        print(uri + ' not accepted')
         print("Response code: {}".format(response.status_code))
-
-    return response.json()
+        print(response)
+        return {}
 
 def get_word(attribute, index = None, query = None):
     
