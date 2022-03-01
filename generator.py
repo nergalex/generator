@@ -169,12 +169,12 @@ def get_sentence():
         words = get_words(attribute)
         print(words)
         words_size = len(words)
-        print(str(words_size))
+        #print(str(words_size))
         if words_size == 0 : #error api_size
             generated_name[attribute] = "null"
         else:
             index = randint(0, words_size-1)
-            print(index)
+            #print(index)
             name = words[index]['name']
             generated_name[attribute] = name
     return generated_name
@@ -202,7 +202,7 @@ def get_words(attribute):
     else:
         print(uri + ' not accepted')
         print("Response code: {}".format(response.status_code))
-        print(response)
+        print('Response: ' + str(response))
         return {}
 
 def get_word(attribute, index = None, query = None):
