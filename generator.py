@@ -48,7 +48,8 @@ class Server(BaseHTTPRequestHandler):
                     content_type = 'application/json'
                     response_content = json.dumps(get_sentence())
                 case _:
-                    print("not found")
+                    content_type = 'application/json'
+                    response_content = json.dumps(get_words(routes[self.path]))
         else:
             status = 404
             content_type = "text/plain"
