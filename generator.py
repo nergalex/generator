@@ -59,7 +59,9 @@ class Server(BaseHTTPRequestHandler):
                     response_content = "health OK\n"
                 case "sentence":
                     content_type = 'application/json'
-                    response_content['sentence'] = get_sentence()
+                    sentence_test = {}
+                    sentence_test['sentence'] = get_sentence()
+                    response_content = json.dumps(sentence_test)
                 case _:
                     content_type = 'application/json'
                     response_content = json.dumps(get_words(routes[self.path]))
@@ -70,9 +72,9 @@ class Server(BaseHTTPRequestHandler):
         
         # Append Env vars
         if SITE_ENV != "":
-            #test = json.loads(response_content)
-            response_content.update({"env" : SITE_ENV})
-            print(response_content)
+            test = json.loads(response_content)
+            test.update({"env" : SITE_ENV})
+            print(test)
 
         self.send_response(status)
         self.send_header('Content-Type', content_type)
