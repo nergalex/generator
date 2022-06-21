@@ -10,6 +10,8 @@ COPY /routes /routes
 EXPOSE 8080
 
 RUN pip install requests
+RUN apt update
+RUN apt -y install curl net-tools
 
 WORKDIR /
 CMD ["python", "generator.py"]
