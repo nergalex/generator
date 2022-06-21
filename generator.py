@@ -74,7 +74,8 @@ class Server(BaseHTTPRequestHandler):
         if SITE_ENV != "":
             test = json.loads(response_content)
             test.update({"env" : SITE_ENV})
-            print(test)
+            response_content = json.dumps(test, indent=4)
+            print(response_content)
 
         self.send_response(status)
         self.send_header('Content-Type', content_type)
