@@ -71,7 +71,7 @@ class Server(BaseHTTPRequestHandler):
         # Append Env vars
         if SITE_ENV != "":
             test = json.loads(response_content)
-            test.append({"env" : SITE_ENV})
+            test.update({"env" : SITE_ENV})
             print(test)
 
         self.send_response(status)
