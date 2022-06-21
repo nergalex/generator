@@ -9,6 +9,7 @@ import json
 
 from random import randint
 
+# Get Env vars
 try:
     PREFIX = os.environ.get('PREFIX')
     if type(PREFIX)== type(None) :
@@ -21,6 +22,18 @@ try:
         NAMESPACE = ""
 except:
     NAMESPACE = ""
+try:
+    SITE_ENV = os.environ.get('SITE_ENV')
+    if type(SITE_ENV) == type(None) :
+        SITE_ENV = ""
+except:
+    SITE_ENV = ""
+try:
+    SITE_ENV_MESSAGE = os.environ.get('SITE_ENV_MESSAGE')
+    if type(SITE_ENV_MESSAGE) == type(None) :
+        SITE_ENV_MESSAGE = ""
+except:
+    SITE_ENV_MESSAGE = ""
 
 class Server(BaseHTTPRequestHandler):
 
@@ -55,6 +68,12 @@ class Server(BaseHTTPRequestHandler):
             content_type = "text/plain"
             response_content = "404 not found"
         
+        # Append Env vars
+        if SITE_ENV != "":
+            test = json.loads(response_content)
+            test.append({"env" : SITE_ENV})
+            print(test)
+
         self.send_response(status)
         self.send_header('Content-Type', content_type)
         self.end_headers()
