@@ -76,12 +76,12 @@ class Server(BaseHTTPRequestHandler):
         if content_type == 'application/json':
             if SITE_ENV != "":
                 test = json.loads(response_content)
-                test.update({"env" : SITE_ENV})
-                self.send_header('x-sentence-env', SITE_ENV)
+                test.update({"env" : SITE_ENV})               
                 response_content = json.dumps(test, indent=4)
                 print(response_content)
 
         self.send_response(status)
+        self.send_header('sentence-env', SITE_ENV)
         self.send_header('Content-Type', content_type)
         self.end_headers()
         self.respond(bytes(response_content, "UTF-8"))
