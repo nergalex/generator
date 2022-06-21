@@ -77,6 +77,7 @@ class Server(BaseHTTPRequestHandler):
             if SITE_ENV != "":
                 test = json.loads(response_content)
                 test.update({"env" : SITE_ENV})
+                self.send_header('x-sentence-env', SITE_ENV)
                 response_content = json.dumps(test, indent=4)
                 print(response_content)
 
