@@ -59,23 +59,26 @@ class Server(BaseHTTPRequestHandler):
                     response_content = "health OK\n"
                 case "sentence":
                     content_type = 'application/json'
-                    sentence_test = {}
-                    sentence_test['sentence'] = get_sentence()
-                    response_content = json.dumps(sentence_test)
+                    json_data = {}
+                    json_data['sentence'] = get_sentence()
+                    response_content = json.dumps(json_data)
                 case _:
                     content_type = 'application/json'
-                    response_content = json.dumps(get_words(routes[self.path]))
+                    json_data = {}
+                    json_data[routes[self.path]] = get_words(routes[self.path])
+                    response_content = json.dumps(json_data)
         else:
             status = 404
             content_type = "text/plain"
             response_content = "404 not found"
         
         # Append Env vars
-        if SITE_ENV != "":
-            test = json.loads(response_content)
-            test.update({"env" : SITE_ENV})
-            response_content = json.dumps(test, indent=4)
-            print(response_content)
+        if content_type == 'application/json':
+            if SITE_ENV != "":
+                test = json.loads(response_content)
+                test.update({"env" : SITE_ENV})
+                response_content = json.dumps(test, indent=4)
+                print(response_content)
 
         self.send_response(status)
         self.send_header('Content-Type', content_type)
