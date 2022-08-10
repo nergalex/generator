@@ -81,7 +81,7 @@ class Server(BaseHTTPRequestHandler):
                 print(response_content)
 
         self.send_response(status)
-        self.send_header('sentence-env', SITE_ENV)
+        self.send_header('x-sentence-env', SITE_ENV)
         self.send_header('Content-Type', content_type)
         self.end_headers()
         self.respond(bytes(response_content, "UTF-8"))
