@@ -11,7 +11,7 @@ EXPOSE 8080
 
 RUN pip install requests
 RUN apt update
-RUN apt -y install curl net-tools
+RUN apt -y install curl net-tools procps
 
 WORKDIR /
 CMD ["python", "generator.py"]
