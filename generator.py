@@ -201,10 +201,13 @@ def get_sentence():
             generated_name[attribute] = "null"
         else:
             index = randint(0, words_size-1)
-            #print(index)
-            name = words[index]['name']
+            if 'name' in words[index].keys():
+                name = words[index]['name']
+            else:
+                name = words[index]['value']
             generated_name[attribute] = name
     return generated_name
+
 
 def get_words(attribute):
     content_type = 'application/json'
