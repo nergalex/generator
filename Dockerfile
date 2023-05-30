@@ -11,7 +11,7 @@ EXPOSE 8080
 
 RUN pip install requests
 RUN apt update
-RUN apt -y install curl net-tools procps
+RUN apt -y install curl net-tools procps wget
 
 # Bombardier
 RUN rm -rf /usr/local/go && \
